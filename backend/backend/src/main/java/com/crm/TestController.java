@@ -21,7 +21,7 @@ public class TestController {
         return "✅ CRM 项目启动成功！连接数据库正常！";
     }
 
-    // 读取客户表数据（真正连库查询）
+    // 读取客户表数据（连库查询）
     @GetMapping("/api/customers")
     public List<Map<String, Object>> getCustomers() {
         return jdbcTemplate.queryForList("SELECT * FROM customer");
