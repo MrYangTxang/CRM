@@ -3,6 +3,7 @@ package com.crm.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,18 +13,19 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("customer")
-public class Customer {
+@TableName("staff")
+public class Staff {
     @TableId(type = IdType.AUTO)
     private Integer id;
     private String name;
-    private String contactPerson;
+    private String username;
+
+    @JsonIgnore
+    private String password;
+
+    private String role;
     private String phone;
-    private String email;
-    private String address;
-    private String vipLevel;
-    private String tags;
-    private Integer salesPerson;
     private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime lastLoginTime;
+    private String lastLoginIp;
 }

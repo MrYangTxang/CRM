@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS business (
     status VARCHAR(20) DEFAULT '进行中' COMMENT '业务状态',
     customer_id INT COMMENT '关联客户ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (customer_id) REFERENCES customer(id) ON DELETE SET NULL
 ) COMMENT='业务信息表';
 
@@ -47,7 +48,9 @@ CREATE TABLE IF NOT EXISTS staff (
     password VARCHAR(100) NOT NULL COMMENT '密码（明文或加密）',
     role VARCHAR(20) DEFAULT 'employee' COMMENT '角色: admin/employee',
     phone VARCHAR(20) COMMENT '联系电话',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    last_login_time DATETIME COMMENT '最后登录时间',
+    last_login_ip VARCHAR(50) COMMENT '最后登录IP'
 ) COMMENT='人员信息表';
 
 -- 插入测试数据
@@ -60,7 +63,9 @@ INSERT INTO business (name, type, price, customer_id) VALUES
 ('年度运维支持', '运维服务', 2000.00, 1),
 ('CRM系统定制', '软件开发', 15000.00, 2);
 
-INSERT INTO staff (name, username, password, role) VALUES 
+-- 管理员和测试账号（密码由 DataInitializer 在首次启动时自动 BCrypt 加密）
+-- 此处插入的明文密码会在应用启动后被自动加密为 BCrypt 格式
+INSERT INTO staff (name, username, password, role) VALUES
 ('系统管理员', 'admin', '123456', 'admin'),
 ('张三', 'zhangsan', '123456', 'employee');
 
