@@ -1,0 +1,7 @@
+#!/bin/bash
+JAVA_HOME="C:/Program Files/Java/jdk-24"
+MVNW_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec "$JAVA_HOME/bin/java" \
+  -Dmaven.multiModuleProjectDirectory="$MVNW_DIR" \
+  -jar "$MVNW_DIR/.mvn/wrapper/maven-wrapper.jar" \
+  "$@"
