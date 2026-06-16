@@ -21,7 +21,7 @@ public class WorkOrderService {
 
     @Transactional
     public boolean createOrder(WorkOrder order) {
-        order.setOrderNo("WO" + System.currentTimeMillis());
+        order.setOrderNo("WO" + System.currentTimeMillis() + (int)(Math.random() * 9000 + 1000));
         order.setStatus("created");
         order.setCreateTime(LocalDateTime.now());
         if (order.getPriority() == null || order.getPriority().trim().isEmpty()) {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>业务管理</h2>
-    <el-button type="primary" @click="handleAdd" v-if="userStore.role === 'admin'">新增业务</el-button>
+    <el-button type="primary" @click="handleAdd" v-if="userStore.role === 'admin' || userStore.role === 'sales_manager'">新增业务</el-button>
     <el-button @click="handleExport">导出Excel</el-button>
     <el-upload
       action="/api/business/import"
@@ -9,7 +9,7 @@
       :on-success="handleImportSuccess"
       :before-upload="beforeUpload"
       style="display: inline-block; margin-left: 10px"
-      v-if="userStore.role === 'admin'"
+      v-if="userStore.role === 'admin' || userStore.role === 'sales_manager'"
     >
       <el-button type="success">导入Excel</el-button>
     </el-upload>
@@ -44,7 +44,7 @@
         </template>
 
       </el-table-column>
-      <el-table-column label="操作" width="180" v-if="userStore.role === 'admin'">
+      <el-table-column label="操作" width="180" v-if="userStore.role === 'admin' || userStore.role === 'sales_manager'">
         <template #default="{ row }">
           <el-button size="small" @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>

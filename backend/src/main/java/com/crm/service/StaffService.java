@@ -8,6 +8,7 @@ import com.crm.common.BusinessException;
 import com.crm.entity.Staff;
 import com.crm.mapper.StaffMapper;
 import com.crm.util.ValidationUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class StaffService {
 
@@ -60,19 +62,25 @@ public class StaffService {
         if (staff.getPhone() != null && !staff.getPhone().trim().isEmpty()) {
             ValidationUtil.requireValidPhone(staff.getPhone());
         }
-        if (staff.getRole() != null && !"admin".equals(staff.getRole()) && !"employee".equals(staff.getRole())) {
-            throw new BusinessException("角色必须是 admin 或 employee");
+        if (staff.getRole() != null && !"admin".equals(staff.getRole()) && !"employee".equals(staff.getRole()) && !"sales_manager".equals(staff.getRole())) {
+            throw new BusinessException("角色必须是 admin、employee 或 sales_manager");
         }
     }
 
     public boolean login(String username, String rawPassword, HttpServletRequest request) {
         Staff staff = staffMapper.findByUsername(username);
-        if (staff == null) return false;
+        if (staff == null) {
+            log.warn("登录失败: 用户名 {} 不存在, IP={}", username, getClientIp(request));
+            return false;
+        }
         boolean matched = encoder.matches(rawPassword, staff.getPassword());
         if (matched) {
             staff.setLastLoginTime(LocalDateTime.now());
             staff.setLastLoginIp(getClientIp(request));
             staffMapper.updateById(staff);
+            log.info("登录成功: username={}, IP={}", username, staff.getLastLoginIp());
+        } else {
+            log.warn("登录失败: username={} 密码错误, IP={}", username, getClientIp(request));
         }
         return matched;
     }
@@ -126,8 +134,8 @@ public class StaffService {
 
     @Transactional
     public boolean updateRole(Integer id, String role, String currentUsername) {
-        if (!"admin".equals(role) && !"employee".equals(role)) {
-            throw new BusinessException("角色必须是 admin 或 employee");
+        if (!"admin".equals(role) && !"employee".equals(role) && !"sales_manager".equals(role)) {
+            throw new BusinessException("角色必须是 admin、employee 或 sales_manager");
         }
         Staff staff = staffMapper.selectById(id);
         if (staff == null) return false;

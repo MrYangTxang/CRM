@@ -5,8 +5,9 @@
 
     <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center">
       <el-input v-model="searchKeyword" placeholder="搜索姓名/用户名/电话" style="width: 240px" clearable @clear="fetchData" @keyup.enter="fetchData" />
-      <el-select v-model="searchRole" placeholder="角色筛选" style="width: 130px" clearable @clear="fetchData">
+      <el-select v-model="searchRole" placeholder="角色筛选" style="width: 150px" clearable @clear="fetchData">
         <el-option label="管理员" value="admin" />
+        <el-option label="销售经理" value="sales_manager" />
         <el-option label="普通用户" value="employee" />
       </el-select>
       <el-button type="primary" @click="fetchData">搜索</el-button>
@@ -32,6 +33,7 @@
             placeholder="请选择"
           >
             <el-option label="管理员" value="admin" />
+            <el-option label="销售经理" value="sales_manager" />
             <el-option label="普通用户" value="employee" />
           </el-select>
         </template>
@@ -72,6 +74,7 @@
         <el-form-item label="角色" v-if="userStore.role === 'admin'">
           <el-select v-model="form.role">
             <el-option label="普通用户" value="employee" />
+            <el-option label="销售经理" value="sales_manager" />
             <el-option label="管理员" value="admin" />
           </el-select>
         </el-form-item>

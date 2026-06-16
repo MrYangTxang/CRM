@@ -2,7 +2,9 @@ package com.crm.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.crm.common.ApiResponse;
+import com.crm.entity.Staff;
 import com.crm.entity.WorkOrder;
+import com.crm.service.StaffService;
 import com.crm.service.WorkOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +19,29 @@ public class WorkOrderController {
     @Autowired
     private WorkOrderService workOrderService;
 
+    @Autowired
+    private StaffService staffService;
+
     private String getLoginUsername(HttpServletRequest request) {
         Object loginUser = request.getSession().getAttribute("loginUser");
         return loginUser != null ? loginUser.toString() : null;
     }
 
     private boolean isAdmin(HttpServletRequest request) {
-        return "admin".equals(getLoginUsername(request));
+        String username = getLoginUsername(request);
+        if (username == null) return false;
+        Staff staff = staffService.findByUsername(username);
+        return staff != null && "admin".equals(staff.getRole());
+    }
+
+    /** 获取当前登录用户ID */
+    private Integer getLoginUserId(HttpServletRequest request) {
+        String username = getLoginUsername(request);
+        if (username != null) {
+            Staff staff = staffService.findByUsername(username);
+            if (staff != null) return staff.getId();
+        }
+        return null;
     }
 
     @PostMapping("/create")
@@ -70,7 +88,9 @@ public class WorkOrderController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
-        return ApiResponse.success(workOrderService.search(keyword, status, null, isAdmin(request), page, size));
+        boolean admin = isAdmin(request);
+        Integer ownerId = admin ? null : getLoginUserId(request);
+        return ApiResponse.success(workOrderService.search(keyword, status, ownerId, admin, page, size));
     }
 
     @GetMapping("/list")
@@ -81,6 +101,8 @@ public class WorkOrderController {
     /** 待处理工单数 */
     @GetMapping("/pending-count")
     public ApiResponse<Long> pendingCount(HttpServletRequest request) {
-        return ApiResponse.success(workOrderService.countPending(null, isAdmin(request)));
+        boolean admin = isAdmin(request);
+        Integer ownerId = admin ? null : getLoginUserId(request);
+        return ApiResponse.success(workOrderService.countPending(ownerId, admin));
     }
 }

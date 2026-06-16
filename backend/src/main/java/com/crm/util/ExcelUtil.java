@@ -14,7 +14,12 @@ public class ExcelUtil {
             case STRING:
                 return cell.getStringCellValue();
             case NUMERIC:
-                return String.valueOf((long) cell.getNumericCellValue());
+                double val = cell.getNumericCellValue();
+                // 整数则不带小数点，小数保留原值（避免金额截断）
+                if (val == Math.floor(val) && !Double.isInfinite(val)) {
+                    return String.valueOf((long) val);
+                }
+                return String.valueOf(val);
             default:
                 return "";
         }

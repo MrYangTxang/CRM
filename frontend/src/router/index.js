@@ -8,6 +8,12 @@ const CustomerPage = () => import('../views/CustomerPage.vue')
 const BusinessPage = () => import('../views/BusinessPage.vue')
 const WorkOrderPage = () => import('../views/WorkOrderPage.vue')
 const StaffPage = () => import('../views/StaffPage.vue')
+const SeaPoolPage = () => import('../views/SeaPoolPage.vue')
+const ChurnPage = () => import('../views/ChurnPage.vue')
+const TodoPage = () => import('../views/TodoPage.vue')
+const NotificationPage = () => import('../views/NotificationPage.vue')
+const SysConfigPage = () => import('../views/SysConfigPage.vue')
+const RecycleBinPage = () => import('../views/RecycleBinPage.vue')
 
 const routes = [
   { path: '/login', component: LoginPage },
@@ -22,6 +28,12 @@ const routes = [
       { path: 'business', component: BusinessPage },
       { path: 'workorder', component: WorkOrderPage },
       { path: 'staff', component: StaffPage },
+      { path: 'seapool', component: SeaPoolPage },
+      { path: 'churn', component: ChurnPage },
+      { path: 'todo', component: TodoPage },
+      { path: 'notification', component: NotificationPage },
+      { path: 'sysconfig', component: SysConfigPage },
+      { path: 'recyclebin', component: RecycleBinPage },
     ]
   }
 ]

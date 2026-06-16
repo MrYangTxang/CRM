@@ -4,9 +4,15 @@
       <el-menu router :default-active="$route.path">
         <el-menu-item index="/dashboard">📊 工作台</el-menu-item>
         <el-menu-item index="/customer">👥 客户管理</el-menu-item>
-        <el-menu-item index="/staff" v-if="userStore.role === 'admin'">👤 人员管理</el-menu-item>
+        <el-menu-item index="/seapool">🌊 公海池</el-menu-item>
         <el-menu-item index="/business">💼 业务管理</el-menu-item>
         <el-menu-item index="/workorder">📝 工单管理</el-menu-item>
+        <el-menu-item index="/churn">📉 流失管理</el-menu-item>
+        <el-menu-item index="/todo">✅ 待办事项</el-menu-item>
+        <el-menu-item index="/notification">🔔 通知中心</el-menu-item>
+        <el-menu-item index="/staff" v-if="userStore.role === 'admin' || userStore.role === 'sales_manager'">👤 人员管理</el-menu-item>
+        <el-menu-item index="/sysconfig" v-if="userStore.role === 'admin'">⚙️ 系统配置</el-menu-item>
+        <el-menu-item index="/recyclebin" v-if="userStore.role === 'admin'">🗑️ 回收站</el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

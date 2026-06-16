@@ -86,12 +86,17 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
         log.info("客户表为空，开始插入示例客户数据...");
+        // 获取员工ID用于分配负责人
+        Staff zhangsan = staffMapper.findByUsername("zhangsan");
+        Integer zhangsanId = zhangsan != null ? zhangsan.getId() : null;
+
         Customer c1 = new Customer();
         c1.setName("大连XX科技有限公司");
         c1.setContactPerson("张三");
         c1.setPhone("13800001111");
         c1.setEmail("zhang@xxtech.com");
         c1.setAddress("大连市高新园区");
+        c1.setSalesPerson(zhangsanId);
         customerMapper.insert(c1);
 
         Customer c2 = new Customer();
@@ -100,6 +105,7 @@ public class DataInitializer implements CommandLineRunner {
         c2.setPhone("13912345678");
         c2.setEmail("li@yytrade.com");
         c2.setAddress("沈阳市沈河区");
+        c2.setSalesPerson(zhangsanId);
         customerMapper.insert(c2);
         log.info("示例客户数据插入完成 (2 条)");
     }
@@ -114,6 +120,9 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
         log.info("业务表为空，开始插入示例业务数据...");
+        // 获取员工ID
+        Staff zhangsan = staffMapper.findByUsername("zhangsan");
+        Integer zhangsanId = zhangsan != null ? zhangsan.getId() : null;
         // 获取已存在的客户（通过名称匹配）
         List<Customer> customers = customerMapper.selectList(null);
         Integer customerId1 = null;
@@ -143,6 +152,7 @@ public class DataInitializer implements CommandLineRunner {
         b1.setPrice(new BigDecimal("5000.00"));
         b1.setStatus("进行中");
         b1.setCustomerId(customerId1);
+        b1.setOwnerId(zhangsanId);
         businessMapper.insert(b1);
 
         Business b2 = new Business();
@@ -151,6 +161,7 @@ public class DataInitializer implements CommandLineRunner {
         b2.setPrice(new BigDecimal("2000.00"));
         b2.setStatus("进行中");
         b2.setCustomerId(customerId1);
+        b2.setOwnerId(zhangsanId);
         businessMapper.insert(b2);
 
         Business b3 = new Business();
@@ -159,6 +170,7 @@ public class DataInitializer implements CommandLineRunner {
         b3.setPrice(new BigDecimal("15000.00"));
         b3.setStatus("已完成");
         b3.setCustomerId(customerId2);
+        b3.setOwnerId(zhangsanId);
         businessMapper.insert(b3);
         log.info("示例业务数据插入完成 (3 条)");
     }

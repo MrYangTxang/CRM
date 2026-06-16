@@ -39,7 +39,10 @@ public class CustomerController {
     }
 
     private boolean isAdmin(HttpServletRequest request) {
-        return "admin".equals(getLoginUsername(request));
+        String username = getLoginUsername(request);
+        if (username == null) return false;
+        Staff staff = staffService.findByUsername(username);
+        return staff != null && "admin".equals(staff.getRole());
     }
 
     /** 获取当前登录用户的ID */
@@ -94,7 +97,10 @@ public class CustomerController {
 
     @GetMapping("/export")
     public void export(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        List<Customer> customers = customerService.listAll();
+        // 按数据权限导出，而非导出全部
+        boolean admin = isAdmin(request);
+        Integer salesPerson = admin ? null : getLoginUserId(request);
+        List<Customer> customers = customerService.searchAll(null, null, salesPerson, admin);
         customerService.exportToExcel(response, customers);
         ExportHistory history = new ExportHistory();
         history.setTableName("customer");
@@ -107,8 +113,14 @@ public class CustomerController {
 
     @PostMapping("/import")
     public ApiResponse<String> importExcel(@RequestParam("file") MultipartFile file) throws IOException {
-        customerService.importFromExcel(file);
-        return ApiResponse.success("导入成功");
+        CustomerService.ImportResult result = customerService.importFromExcel(file);
+        if (result.hasErrors()) {
+            return ApiResponse.success(String.format(
+                    "导入完成：成功 %d 条，跳过 %d 条（含重复）。错误详情：%s",
+                    result.getInserted(), result.getSkipped(),
+                    String.join("; ", result.getErrors())));
+        }
+        return ApiResponse.success(String.format("导入完成：成功 %d 条，跳过 %d 条", result.getInserted(), result.getSkipped()));
     }
 
     /** 省份/城市统计 */

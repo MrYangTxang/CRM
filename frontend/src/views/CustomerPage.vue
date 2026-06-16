@@ -105,7 +105,7 @@
         <el-form-item label="地址">
           <el-input v-model="form.address" placeholder="请输入地址" />
         </el-form-item>
-        <el-form-item v-if="userStore.role === 'admin'" label="负责人ID">
+        <el-form-item v-if="userStore.role === 'admin' || userStore.role === 'sales_manager'" label="负责人ID">
           <el-input-number v-model="form.salesPerson" :min="1" placeholder="请输入负责人ID" style="width: 100%" />
         </el-form-item>
       </el-form>

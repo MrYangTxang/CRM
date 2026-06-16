@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.crm.common.ApiResponse;
 import com.crm.entity.Business;
 import com.crm.entity.ExportHistory;
+import com.crm.entity.Staff;
 import com.crm.service.BusinessService;
 import com.crm.service.ExportHistoryService;
+import com.crm.service.StaffService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +29,29 @@ public class BusinessController {
     @Autowired
     private ExportHistoryService exportHistoryService;
 
+    @Autowired
+    private StaffService staffService;
+
     private String getLoginUsername(HttpServletRequest request) {
         Object loginUser = request.getSession().getAttribute("loginUser");
         return loginUser != null ? loginUser.toString() : null;
     }
 
+    /** 获取当前登录用户ID */
+    private Integer getLoginUserId(HttpServletRequest request) {
+        String username = getLoginUsername(request);
+        if (username != null) {
+            Staff staff = staffService.findByUsername(username);
+            if (staff != null) return staff.getId();
+        }
+        return null;
+    }
+
     private boolean isAdmin(HttpServletRequest request) {
-        return "admin".equals(getLoginUsername(request));
+        String username = getLoginUsername(request);
+        if (username == null) return false;
+        Staff staff = staffService.findByUsername(username);
+        return staff != null && "admin".equals(staff.getRole());
     }
 
     @GetMapping("/search")
@@ -44,7 +62,9 @@ public class BusinessController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
-        return ApiResponse.success(businessService.search(keyword, status, customerId, null, isAdmin(request), page, size));
+        boolean admin = isAdmin(request);
+        Integer ownerId = admin ? null : getLoginUserId(request);
+        return ApiResponse.success(businessService.search(keyword, status, customerId, ownerId, admin, page, size));
     }
 
     @GetMapping("/list")
@@ -82,7 +102,10 @@ public class BusinessController {
 
     @GetMapping("/export")
     public void export(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        List<Business> list = businessService.listAll();
+        // 按数据权限导出，而非导出全部
+        boolean admin = isAdmin(request);
+        Integer ownerId = admin ? null : getLoginUserId(request);
+        List<Business> list = businessService.searchAll(null, null, null, ownerId, admin);
         businessService.exportToExcel(response, list);
         // 记录导出历史
         ExportHistory history = new ExportHistory();
@@ -96,7 +119,13 @@ public class BusinessController {
 
     @PostMapping("/import")
     public ApiResponse<String> importExcel(@RequestParam("file") MultipartFile file) throws IOException {
-        businessService.importFromExcel(file);
-        return ApiResponse.success("导入成功");
+        BusinessService.ImportResult result = businessService.importFromExcel(file);
+        if (result.hasErrors()) {
+            return ApiResponse.success(String.format(
+                    "导入完成：成功 %d 条，跳过 %d 条（含重复）。错误详情：%s",
+                    result.getInserted(), result.getSkipped(),
+                    String.join("; ", result.getErrors())));
+        }
+        return ApiResponse.success(String.format("导入完成：成功 %d 条，跳过 %d 条", result.getInserted(), result.getSkipped()));
     }
 }

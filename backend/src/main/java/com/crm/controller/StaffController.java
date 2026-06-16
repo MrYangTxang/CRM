@@ -20,39 +20,75 @@ public class StaffController {
     @Autowired
     private StaffService staffService;
 
+    /** 获取当前登录用户 */
+    private Staff getCurrentUser(HttpServletRequest request) {
+        String username = (String) request.getSession().getAttribute("loginUser");
+        if (username == null) return null;
+        return staffService.findByUsername(username);
+    }
+
+    /** 校验当前用户是否为管理员 */
+    private void requireAdmin(HttpServletRequest request) {
+        Staff user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(401, "请先登录");
+        }
+        if (!"admin".equals(user.getRole())) {
+            throw new BusinessException(403, "仅管理员可执行此操作");
+        }
+    }
+
+    /** 校验当前用户是否为管理员或销售经理 */
+    private void requireManagerOrAbove(HttpServletRequest request) {
+        Staff user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(401, "请先登录");
+        }
+        if (!"admin".equals(user.getRole()) && !"sales_manager".equals(user.getRole())) {
+            throw new BusinessException(403, "仅管理员和销售经理可执行此操作");
+        }
+    }
+
     @GetMapping("/search")
     public ApiResponse<IPage<Staff>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size) {
+            @RequestParam(defaultValue = "10") Integer size,
+            HttpServletRequest request) {
+        requireManagerOrAbove(request);
         return ApiResponse.success(staffService.search(keyword, role, page, size));
     }
 
     @GetMapping("/list")
-    public ApiResponse<List<Staff>> list() {
+    public ApiResponse<List<Staff>> list(HttpServletRequest request) {
+        requireManagerOrAbove(request);
         return ApiResponse.success(staffService.listAll());
     }
 
     @GetMapping("/detail/{id}")
-    public ApiResponse<Staff> getById(@PathVariable Integer id) {
+    public ApiResponse<Staff> getById(@PathVariable Integer id, HttpServletRequest request) {
+        requireManagerOrAbove(request);
         return ApiResponse.success(staffService.getById(id));
     }
 
     @PostMapping("/add")
-    public ApiResponse<String> add(@RequestBody Staff staff) {
+    public ApiResponse<String> add(@RequestBody Staff staff, HttpServletRequest request) {
+        requireManagerOrAbove(request);
         boolean ok = staffService.add(staff);
         return ApiResponse.success(ok ? "添加成功" : "添加失败");
     }
 
     @PutMapping("/update")
-    public ApiResponse<String> update(@RequestBody Staff staff) {
+    public ApiResponse<String> update(@RequestBody Staff staff, HttpServletRequest request) {
+        requireManagerOrAbove(request);
         boolean ok = staffService.update(staff);
         return ApiResponse.success(ok ? "更新成功" : "更新失败");
     }
 
     @DeleteMapping("/delete/{id}")
-    public ApiResponse<String> delete(@PathVariable Integer id) {
+    public ApiResponse<String> delete(@PathVariable Integer id, HttpServletRequest request) {
+        requireAdmin(request);
         boolean ok = staffService.delete(id);
         return ApiResponse.success(ok ? "删除成功" : "删除失败");
     }
@@ -76,6 +112,7 @@ public class StaffController {
     @PutMapping("/role/{id}")
     public ApiResponse<String> updateRole(@PathVariable Integer id, @RequestParam String role,
                                           HttpServletRequest request) {
+        requireManagerOrAbove(request);
         String currentUsername = (String) request.getSession().getAttribute("loginUser");
         boolean ok = staffService.updateRole(id, role, currentUsername);
         return ApiResponse.success(ok ? "修改成功" : "修改失败");
@@ -95,7 +132,10 @@ public class StaffController {
 
     @PutMapping("/resetPassword")
     public ApiResponse<String> resetPassword(@RequestParam String username,
-                                              @RequestParam String newPassword) {
+                                              @RequestParam String newPassword,
+                                              HttpServletRequest request) {
+        // 仅管理员可重置他人密码
+        requireAdmin(request);
         staffService.resetPassword(username, newPassword);
         return ApiResponse.success("密码重置成功");
     }

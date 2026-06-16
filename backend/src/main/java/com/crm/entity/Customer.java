@@ -24,6 +24,10 @@ public class Customer {
     private String vipLevel;
     private String tags;
     private Integer salesPerson;
+    private Integer deleted;       // 0=正常, 1=已删除（软删除）
+    private String status;         // active / churned
+    private String churnReason;    // 流失原因
+    private LocalDateTime churnTime;    // 流失时间
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
